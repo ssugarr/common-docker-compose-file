@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:8.1 # 使用适当的 MySQL 版本
+    container_name: mysql8
+    env_file:
+      - .env # 使用.env文件存储环境变量
+    ports:
+      - 3306:3306
+    volumes:
+      - /data/database/mysql8/data:/var/lib/mysql # 持久化数据
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mysql_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # 从.env文件读取MySQL root密码
+    ports:
+      - 8080:80
+    depends_on:
+      - mysql
+    networks:
+      - mysql_network
+
+networks:
+  mysql_network:
+    name: mysql_network # 定义网络名称
