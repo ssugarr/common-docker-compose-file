@@ -1,0 +1,21 @@
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:8.1 # MySQL版本
+    container_name: mysql8
+    env_file:
+      - .env # 使用.env文件存储环境变量
+    ports:
+      - 3306:3306 # 端口号映射
+    volumes:
+      - /data/database/mysql8/data:/var/lib/mysql # 持久化数据
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  default:
+    name: mysql_network # 定义网络名称
