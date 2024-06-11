@@ -1,0 +1,37 @@
+version: '3.1'
+
+services:
+  mongodb:
+    image: mongo:5.0 # 使用 MongoDB 5.0 镜像
+    container_name: mongodb
+    env_file:
+      - .env # 使用.env文件存储环境变量
+    ports:
+      - 27017:27017
+    volumes:
+      - /data/database/mongodb/data:/data/db # 持久化数据
+    networks:
+      - mongo_network
+    healthcheck:
+      test: ["CMD-SHELL", "mongo --eval 'db.runCommand({ ping: 1 })'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    ports:
+      - 8081:8081
+    depends_on:
+      - mongodb
+    networks:
+      - mongo_network
+
+networks:
+  mongo_network:
+    name: mongo_network # 定义网络名称
