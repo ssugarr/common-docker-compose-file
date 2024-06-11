@@ -1,0 +1,36 @@
+version: '3.1'
+
+services:
+  mariadb:
+    image: mariadb:10.5 # 使用 MariaDB 10.5 镜像
+    container_name: mariadb
+    env_file:
+      - .env # 使用 .env 文件存储环境变量
+    ports:
+      - 3306:3306
+    volumes:
+      - /data/database/mariadb/data:/var/lib/mysql # 持久化数据
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mariadb_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD} # 从 .env 文件读取 MariaDB root 密码
+    ports:
+      - 8080:80
+    depends_on:
+      - mariadb
+    networks:
+      - mariadb_network
+
+networks:
+  mariadb_network:
+    name: mariadb_network # 定义网络名称
